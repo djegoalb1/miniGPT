@@ -1,0 +1,8 @@
+{
+  "name": "MiniGPT - L'AI per la Scuola e lo Studio",
+  "description": "MiniGPT è il tutor e assistente IA intelligente per studenti e compiti: spiegazioni passo-passo, riassunti, flashcard, quiz e risoluzione esercizi in tutte le materie.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

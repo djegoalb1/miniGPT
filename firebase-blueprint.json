@@ -1,0 +1,46 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User account profile and preferences",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 256 },
+        "displayName": { "type": "string", "maxLength": 128 },
+        "photoURL": { "type": "string", "maxLength": 1024 },
+        "schoolLevel": { "type": "string", "maxLength": 64 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["uid", "email"]
+    },
+    "UserChat": {
+      "title": "UserChat",
+      "description": "Saved study chat session with history",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 256 },
+        "subjectId": { "type": "string", "maxLength": 64 },
+        "modeId": { "type": "string", "maxLength": 64 },
+        "academicLevel": { "type": "string", "maxLength": 64 },
+        "messages": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" },
+        "isPinned": { "type": "boolean" }
+      },
+      "required": ["id", "userId", "title"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Stores user profile information"
+    },
+    "/users/{userId}/chats/{chatId}": {
+      "schema": "UserChat",
+      "description": "User specific chat sessions and message history"
+    }
+  }
+}
