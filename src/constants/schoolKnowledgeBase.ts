@@ -1,5 +1,4 @@
-// Comprehensive Italian school curriculum knowledge base for offline/fallback mode
-// Ensures students ALWAYS receive rich, pedagogical explanations even when daily API quota is exceeded.
+import { BASIC_TOPICS_50 } from './topics50Data';
 
 export interface CurriculumTopic {
   keywords: string[];
@@ -8,7 +7,24 @@ export interface CurriculumTopic {
   content: string;
 }
 
+const FOUNDATIONAL_50_MAPPED: CurriculumTopic[] = BASIC_TOPICS_50.map((t) => ({
+  keywords: [
+    t.title.toLowerCase(),
+    t.category.toLowerCase(),
+    t.subject.toLowerCase(),
+    ...t.keyConcepts.map((k) => k.toLowerCase().replace(/[^a-z0-9]/gi, ' ').trim()),
+    ...t.title
+      .toLowerCase()
+      .split(' ')
+      .filter((w) => w.length > 3),
+  ],
+  title: t.title,
+  subject: t.subject,
+  content: t.content,
+}));
+
 export const SCHOOL_KNOWLEDGE_BASE: CurriculumTopic[] = [
+  ...FOUNDATIONAL_50_MAPPED,
   {
     keywords: ['rivoluzione francese', 'bastiglia', 'robespierre', 'terrore', 'luigi xvi', 'stati generali', 'giacobini', '1789', 'pallacorda'],
     title: 'La Rivoluzione Francese (1789 - 1799)',

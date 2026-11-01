@@ -32,6 +32,8 @@ interface HomepageProps {
   guestTrialCount: number; // 0 to 3
   onUseGuestTrial: (prompt: string) => Promise<string>;
   maxGuestTrials: number;
+  onLoginAsGuestStudent?: (name: string) => Promise<void>;
+  onOpenTopics50?: () => void;
 }
 
 export const Homepage: React.FC<HomepageProps> = ({
@@ -42,6 +44,8 @@ export const Homepage: React.FC<HomepageProps> = ({
   guestTrialCount,
   onUseGuestTrial,
   maxGuestTrials = 3,
+  onLoginAsGuestStudent,
+  onOpenTopics50,
 }) => {
   const [demoInput, setDemoInput] = useState('');
   const [demoConversation, setDemoConversation] = useState<
@@ -55,6 +59,8 @@ export const Homepage: React.FC<HomepageProps> = ({
   const [demoLoading, setDemoLoading] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [guestName, setGuestName] = useState('Studente');
 
   const trialsRemaining = Math.max(0, maxGuestTrials - guestTrialCount);
   const isLimitReached = trialsRemaining === 0 && !currentUser;
@@ -96,12 +102,32 @@ export const Homepage: React.FC<HomepageProps> = ({
 
   const handleGoogleAuth = async () => {
     setAuthLoading(true);
+    setAuthError(null);
     try {
       await onLoginWithGoogle();
       setShowAuthModal(false);
     } catch (err: any) {
-      console.error('Login error:', err);
-      alert('Accesso annullato o non riuscito. Riprova con un account Google.');
+      console.warn('Google login failed or popup blocked:', err?.code || err?.message);
+      if (err?.code === 'auth/popup-blocked' || err?.message === 'POPUP_BLOCKED') {
+        setAuthError('POPUP_BLOCKED');
+      } else {
+        setAuthError('Accesso con Google non completato. Puoi accedere subito con 1 clic come Studente qui sotto.');
+      }
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleGuestAuth = async () => {
+    if (!onLoginAsGuestStudent) return;
+    setAuthLoading(true);
+    setAuthError(null);
+    try {
+      await onLoginAsGuestStudent(guestName);
+      setShowAuthModal(false);
+    } catch (err: any) {
+      console.error('Guest auth failed:', err);
+      setAuthError('Errore durante la creazione del profilo studente. Riprova.');
     } finally {
       setAuthLoading(false);
     }
@@ -219,6 +245,20 @@ export const Homepage: React.FC<HomepageProps> = ({
             <ShieldCheck className="w-3.5 h-3.5 text-purple-400" /> Database Firewall Protetto
           </span>
         </div>
+
+        {onOpenTopics50 && (
+          <div className="pt-3">
+            <button
+              type="button"
+              onClick={onOpenTopics50}
+              className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-indigo-950/80 via-slate-900 to-indigo-950/80 hover:from-indigo-900/90 hover:to-slate-800 border border-indigo-500/40 text-indigo-200 hover:text-white text-xs sm:text-sm font-semibold transition-all hover:scale-[1.02] shadow-lg shadow-indigo-950/60"
+            >
+              <BookOpen className="w-4 h-4 text-indigo-400" />
+              <span>📚 Esplora i 50 Argomenti Base della Scuola Italiana (Formule, Schemi & Quiz)</span>
+              <ArrowRight className="w-3.5 h-3.5 text-indigo-300" />
+            </button>
+          </div>
+        )}
       </section>
 
       {/* Interactive Live Demo Box (Max 3 free trials) */}
@@ -508,6 +548,20 @@ export const Homepage: React.FC<HomepageProps> = ({
               </p>
             </div>
 
+            {/* Warning or Error Message */}
+            {authError && (
+              <div className="p-3 rounded-xl bg-amber-500/15 border border-amber-500/40 text-left text-xs text-amber-200 space-y-1">
+                <span className="font-semibold block text-amber-300">
+                  {authError === 'POPUP_BLOCKED' ? '⚠️ Finestra popup bloccata dal browser' : '⚠️ Avviso Accesso'}
+                </span>
+                <p className="text-[11px] leading-relaxed text-amber-200/90">
+                  {authError === 'POPUP_BLOCKED'
+                    ? 'Il browser ha bloccato il popup di Google. Sblocca i popup nelle impostazioni, oppure crea subito il tuo account studente con 1 clic qui sotto (senza popup).'
+                    : authError}
+                </p>
+              </div>
+            )}
+
             <div className="space-y-3">
               <button
                 type="button"
@@ -541,6 +595,39 @@ export const Homepage: React.FC<HomepageProps> = ({
                   </>
                 )}
               </button>
+
+              {/* 1-Click Fast Student Signup (no popup required) */}
+              <div className="relative py-2">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-slate-800" />
+                </div>
+                <div className="relative flex justify-center text-[10px] uppercase">
+                  <span className="bg-slate-900 px-2 text-slate-500 font-semibold">oppure senza popup</span>
+                </div>
+              </div>
+
+              <div className="space-y-2 p-3 rounded-xl bg-slate-950/60 border border-slate-800">
+                <div className="text-left text-[11px] text-slate-400 font-medium">
+                  Crea Account Studente con 1 clic:
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={guestName}
+                    onChange={(e) => setGuestName(e.target.value)}
+                    placeholder="Il tuo nome (es. Matteo)"
+                    className="flex-1 px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 outline-none focus:border-indigo-500"
+                  />
+                  <button
+                    type="button"
+                    disabled={authLoading}
+                    onClick={handleGuestAuth}
+                    className="py-2 px-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs whitespace-nowrap transition-colors shadow-sm disabled:opacity-50"
+                  >
+                    {authLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Entra Subito'}
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-[11px] text-slate-400 space-y-1 text-left">

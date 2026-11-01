@@ -36,6 +36,7 @@ import {
   BookOpen,
   Image as ImageIcon,
   Zap,
+  BarChart2,
 } from 'lucide-react';
 
 interface ChatViewProps {
@@ -51,6 +52,8 @@ interface ChatViewProps {
   onOpenQuizForTopic: (topic: string, subject: string) => void;
   onOpenFlashcardsForTopic: (topic: string, subject: string) => void;
   onViewImage: (url: string) => void;
+  onOpenStats?: () => void;
+  onOpenTopics50?: () => void;
 }
 
 export const ChatView: React.FC<ChatViewProps> = ({
@@ -66,6 +69,8 @@ export const ChatView: React.FC<ChatViewProps> = ({
   onOpenQuizForTopic,
   onOpenFlashcardsForTopic,
   onViewImage,
+  onOpenStats,
+  onOpenTopics50,
 }) => {
   const [inputText, setInputText] = useState('');
   const [attachedImage, setAttachedImage] = useState<ImageAttachment | null>(null);
@@ -395,6 +400,28 @@ export const ChatView: React.FC<ChatViewProps> = ({
 
         {/* Right header actions */}
         <div className="flex items-center gap-1 sm:gap-2">
+          {onOpenTopics50 && (
+            <button
+              onClick={onOpenTopics50}
+              className="py-1.5 px-2.5 rounded-xl bg-indigo-950/70 hover:bg-indigo-900/70 border border-indigo-500/40 text-indigo-300 hover:text-white transition-colors flex items-center gap-1.5 text-xs font-semibold shadow-sm"
+              title="Esplora i 50 argomenti base del programma scolastico"
+            >
+              <BookOpen className="w-3.5 h-3.5 text-indigo-400" />
+              <span className="hidden sm:inline">50 Temi Base</span>
+            </button>
+          )}
+
+          {onOpenStats && (
+            <button
+              onClick={onOpenStats}
+              className="py-1.5 px-2.5 rounded-xl bg-slate-800 hover:bg-slate-700/80 border border-slate-700/80 text-slate-300 hover:text-white transition-colors flex items-center gap-1.5 text-xs font-medium"
+              title="Visualizza statistiche di studio con Recharts"
+            >
+              <BarChart2 className="w-3.5 h-3.5 text-indigo-400" />
+              <span className="hidden md:inline">Statistiche</span>
+            </button>
+          )}
+
           {session.messages.length > 0 && (
             <>
               <button
@@ -456,6 +483,39 @@ export const ChatView: React.FC<ChatViewProps> = ({
                 </p>
               </div>
             </div>
+
+            {/* 50 Foundational Topics Banner */}
+            {onOpenTopics50 && (
+              <button
+                type="button"
+                onClick={onOpenTopics50}
+                className="w-full p-3.5 rounded-2xl bg-gradient-to-r from-indigo-950/70 via-purple-950/60 to-slate-900 border border-indigo-500/40 hover:border-indigo-400 text-left transition-all flex items-center justify-between shadow-lg group cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center flex-shrink-0 shadow-md shadow-indigo-500/30">
+                    <BookOpen className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-xs sm:text-sm font-bold text-white group-hover:text-indigo-200 transition-colors">
+                        50 Argomenti Base del Programma Scolastico
+                      </h4>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30">
+                        Novità
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      Matematica, fisica, storia, letteratura, chimica e filosofia con spiegazioni e formule
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 group-hover:bg-indigo-500 text-white text-xs font-semibold shadow-md transition-all flex-shrink-0">
+                  <span>Esplora</span>
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                </div>
+              </button>
+            )}
 
             {/* Quick Starters Carousel for current subject */}
             <div className="space-y-3">

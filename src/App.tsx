@@ -11,6 +11,8 @@ import { STUDY_MODES } from './constants/schoolData';
 import {
   auth,
   googleProvider,
+  signInWithGooglePopup,
+  signInAsGuestStudent,
   saveUserProfile,
   saveUserChatToFirestore,
   loadUserChatsFromFirestore,
@@ -22,6 +24,8 @@ import { Homepage } from './components/Homepage';
 import { QuizModal } from './components/QuizModal';
 import { FlashcardsModal } from './components/FlashcardsModal';
 import { ImagePreviewModal } from './components/ImagePreviewModal';
+import { StudyStatsModal } from './components/StudyStatsModal';
+import { Topics50Modal } from './components/Topics50Modal';
 
 const STORAGE_KEY_SESSIONS = 'minigpt_school_sessions_v1';
 const STORAGE_KEY_LEVEL = 'minigpt_school_level_v1';
@@ -80,6 +84,8 @@ export default function App() {
   const [flashcardsSubject, setFlashcardsSubject] = useState('Storia');
 
   const [previewImageSrc, setPreviewImageSrc] = useState<string | null>(null);
+  const [statsModalOpen, setStatsModalOpen] = useState(false);
+  const [topics50ModalOpen, setTopics50ModalOpen] = useState(false);
 
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -174,7 +180,19 @@ export default function App() {
 
   // Auth actions
   const handleLoginWithGoogle = async () => {
-    const cred = await signInWithPopup(auth, googleProvider);
+    try {
+      const cred = await signInWithGooglePopup();
+      if (cred.user) {
+        setViewMode('app');
+      }
+    } catch (err: any) {
+      console.warn('Google login failed or blocked:', err?.code || err?.message);
+      throw err;
+    }
+  };
+
+  const handleLoginAsGuestStudent = async (studentName: string) => {
+    const cred = await signInAsGuestStudent(studentName, academicLevel);
     if (cred.user) {
       setViewMode('app');
     }
@@ -600,11 +618,13 @@ export default function App() {
           <Homepage
             currentUser={currentUser}
             onLoginWithGoogle={handleLoginWithGoogle}
+            onLoginAsGuestStudent={handleLoginAsGuestStudent}
             onLogout={handleLogout}
             onEnterApp={() => setViewMode('app')}
             guestTrialCount={guestTrialCount}
             onUseGuestTrial={handleUseGuestTrial}
             maxGuestTrials={MAX_GUEST_TRIALS}
+            onOpenTopics50={() => setTopics50ModalOpen(true)}
           />
         </div>
       ) : (
@@ -631,6 +651,8 @@ export default function App() {
             onLogin={handleLoginWithGoogle}
             onLogout={handleLogout}
             onGoHome={() => setViewMode('home')}
+            onOpenStats={() => setStatsModalOpen(true)}
+            onOpenTopics50={() => setTopics50ModalOpen(true)}
           />
 
           {/* Main Chat Area */}
@@ -648,6 +670,8 @@ export default function App() {
               onOpenQuizForTopic={handleOpenQuiz}
               onOpenFlashcardsForTopic={handleOpenFlashcards}
               onViewImage={(url) => setPreviewImageSrc(url)}
+              onOpenStats={() => setStatsModalOpen(true)}
+              onOpenTopics50={() => setTopics50ModalOpen(true)}
             />
           </main>
         </>
@@ -674,6 +698,34 @@ export default function App() {
       <ImagePreviewModal
         src={previewImageSrc}
         onClose={() => setPreviewImageSrc(null)}
+      />
+
+      {/* Study Stats Dashboard with Recharts */}
+      <StudyStatsModal
+        isOpen={statsModalOpen}
+        onClose={() => setStatsModalOpen(false)}
+        sessions={sessions}
+        onOpenQuizForTopic={handleOpenQuiz}
+      />
+
+      {/* 50 Argomenti Base Scuola Explorer */}
+      <Topics50Modal
+        isOpen={topics50ModalOpen}
+        onClose={() => setTopics50ModalOpen(false)}
+        onSelectTopicForChat={(prompt, subjectId) => {
+          setTopics50ModalOpen(false);
+          setViewMode('app');
+          handleChangeSubject(subjectId);
+          handleSendMessage(prompt);
+        }}
+        onOpenQuizForTopic={(topic, subject) => {
+          setTopics50ModalOpen(false);
+          handleOpenQuiz(topic, subject);
+        }}
+        onOpenFlashcardsForTopic={(topic, subject) => {
+          setTopics50ModalOpen(false);
+          handleOpenFlashcards(topic, subject);
+        }}
       />
     </div>
   );

@@ -21,6 +21,7 @@ import {
   LogIn,
   ShieldCheck,
   User as UserIcon,
+  BarChart2,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -35,6 +36,8 @@ interface SidebarProps {
   onChangeAcademicLevel: (level: AcademicLevel) => void;
   onOpenQuiz: () => void;
   onOpenFlashcards: () => void;
+  onOpenStats?: () => void;
+  onOpenTopics50?: () => void;
   isOpen: boolean;
   onCloseMobile: () => void;
   currentUser: User | null;
@@ -55,6 +58,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onChangeAcademicLevel,
   onOpenQuiz,
   onOpenFlashcards,
+  onOpenStats,
+  onOpenTopics50,
   isOpen,
   onCloseMobile,
   currentUser,
@@ -160,22 +165,46 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </button>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 pt-1">
+          <div className="grid grid-cols-3 gap-1.5 pt-1">
             <button
               onClick={onOpenQuiz}
-              className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-slate-200 text-xs font-medium flex items-center gap-1.5 transition-colors"
+              className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-slate-200 text-[11px] font-medium flex flex-col items-center gap-1 transition-colors"
+              title="Crea Quiz con Voto"
             >
               <HelpCircle className="w-3.5 h-3.5 text-indigo-400" />
-              <span>Quiz Rapido</span>
+              <span>Quiz</span>
             </button>
             <button
               onClick={onOpenFlashcards}
-              className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-slate-200 text-xs font-medium flex items-center gap-1.5 transition-colors"
+              className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-slate-200 text-[11px] font-medium flex flex-col items-center gap-1 transition-colors"
+              title="Flashcard per Memorizzare"
             >
               <RotateCw className="w-3.5 h-3.5 text-violet-400" />
               <span>Flashcard</span>
             </button>
+            <button
+              onClick={onOpenStats}
+              className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-slate-200 text-[11px] font-medium flex flex-col items-center gap-1 transition-colors"
+              title="Grafici e Statistiche di Studio"
+            >
+              <BarChart2 className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Statistiche</span>
+            </button>
           </div>
+
+          {onOpenTopics50 && (
+            <button
+              onClick={onOpenTopics50}
+              className="w-full py-2 px-3 rounded-xl bg-indigo-950/40 hover:bg-indigo-900/50 border border-indigo-500/30 text-indigo-300 hover:text-white text-xs font-semibold flex items-center justify-between transition-colors shadow-sm"
+              title="Esplora i 50 argomenti base del programma scolastico"
+            >
+              <div className="flex items-center gap-2">
+                <BookOpen className="w-3.5 h-3.5 text-indigo-400" />
+                <span>50 Argomenti Base</span>
+              </div>
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-200">50</span>
+            </button>
+          )}
         </div>
 
         {/* Academic Level Selector */}

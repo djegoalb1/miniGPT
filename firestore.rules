@@ -16,17 +16,13 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    function isValidId(id) {
-      return id is string && id.size() > 0 && id.size() <= 128;
-    }
-
     // User profile documents
     match /users/{userId} {
-      allow read, write: if isOwner(userId) && isValidId(userId);
+      allow read, write: if isOwner(userId);
 
       // User private chat sessions and history subcollection
       match /chats/{chatId} {
-        allow read, write: if isOwner(userId) && isValidId(chatId);
+        allow read, write: if isOwner(userId);
       }
     }
   }

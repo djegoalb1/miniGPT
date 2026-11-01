@@ -61,6 +61,45 @@ export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
 
+// Safe Google Sign-In with popup handling
+export async function signInWithGooglePopup() {
+  try {
+    return await signInWithPopup(auth, googleProvider);
+  } catch (error: any) {
+    if (error?.code === 'auth/popup-blocked' || (error?.message && error.message.includes('popup-blocked'))) {
+      const customErr = new Error('POPUP_BLOCKED');
+      (customErr as any).code = 'auth/popup-blocked';
+      throw customErr;
+    }
+    throw error;
+  }
+}
+
+// 1-Click Anonymous Student Registration (bypasses any browser popup block)
+export async function signInAsGuestStudent(studentName = 'Studente', academicLevel?: string) {
+  const cred = await signInAnonymously(auth);
+  if (cred.user) {
+    const userRef = doc(db, 'users', cred.user.uid);
+    try {
+      await setDoc(
+        userRef,
+        {
+          uid: cred.user.uid,
+          email: `${(studentName || 'studente').toLowerCase().replace(/\s+/g, '')}@scuola.ai`,
+          displayName: studentName.trim() || 'Studente',
+          photoURL: '',
+          schoolLevel: academicLevel || 'Scuola Superiore (14-19 anni)',
+          updatedAt: new Date().toISOString(),
+        },
+        { merge: true }
+      );
+    } catch (e) {
+      console.error('Failed to set initial student profile:', e);
+    }
+  }
+  return cred;
+}
+
 // User Profile management
 export async function saveUserProfile(user: User, extraInfo?: { schoolLevel?: string }) {
   const userRef = doc(db, 'users', user.uid);
